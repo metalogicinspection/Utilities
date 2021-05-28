@@ -1,0 +1,10 @@
+D:\Utility2021\Utilities\Metalogic.UI.Header\bin\Debug\Metalogic.UI.Header.dll
+D:\Utility2021\Utilities\Metalogic.UI.Header\bin\Debug\Metalogic.UI.Header.pdb
+D:\Utility2021\Utilities\Metalogic.UI.Header\obj\Debug\Metalogic.UI.Header.csproj.CoreCompileInputs.cache
+D:\Utility2021\Utilities\Metalogic.UI.Header\obj\Debug\Metalogic.UI.Header.dll
+D:\Utility2021\Utilities\Metalogic.UI.Header\obj\Debug\Metalogic.UI.Header.pdb
+D:\Utilities\Utilities\Metalogic.UI.Header\bin\Debug\Metalogic.UI.Header.dll
+D:\Utilities\Utilities\Metalogic.UI.Header\bin\Debug\Metalogic.UI.Header.pdb
+D:\Utilities\Utilities\Metalogic.UI.Header\obj\Debug\Metalogic.UI.Header.csproj.CoreCompileInputs.cache
+D:\Utilities\Utilities\Metalogic.UI.Header\obj\Debug\Metalogic.UI.Header.dll
+D:\Utilities\Utilities\Metalogic.UI.Header\obj\Debug\Metalogic.UI.Header.pdb
