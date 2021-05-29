@@ -214,14 +214,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)$(OutDir)*" "$(SolutionDir)..\..\Bins\DataUIOpen\" /y
-del  "$(SolutionDir)..\..\Bins\DataUIOpen\*.pdb"
-del  "$(SolutionDir)..\..\Bins\DataUIOpen\DevExpress.*.xml"
-xcopy "$(SolutionDir)..\..\Bins\DataUIOpen\*" "$(SolutionDir)..\..\Bins\DataUI\"  /y
-"C:\Program Files (x86)\Eziriz\.NET Reactor\dotnet_reactor.exe" -project G:\utility\Tools\Utilities\Metalogic.UI\rr.nrproj
+    <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Dlls\$(TargetFileName)
+del $(SolutionDir)..\..\Reporting\Dlls\*.pdb
 
-xcopy "$(SolutionDir)..\..\Bins\DataUI\Metalogic*" "$(SolutionDir)..\..\..\reports\trunk\Bins\DataUI\" /y
-xcopy "$(SolutionDir)..\..\Bins\DataUI\Metalogic*" "$(SolutionDir)..\..\..\metalogic\trunk\Bins\DataUI\" /y</PostBuildEvent>
+
+xcopy "$(SolutionDir)..\Dlls\*" "$(SolutionDir)..\..\Reporting\Dlls\" /y</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

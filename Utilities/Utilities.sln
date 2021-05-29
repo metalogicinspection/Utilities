@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metalogic.DataUtil", "Metalogic.DataUtil\Metalogic.DataUtil.csproj", "{12BE3E37-DB20-4891-9CC5-454BDD8BE8B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metalogic.UI", "Metalogic.UI\Metalogic.UI.csproj", "{2F409591-1B34-4529-BBD6-246C401250E1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{90297947-6CF1-4FE1-9256-89573C3DA1C4} = {90297947-6CF1-4FE1-9256-89573C3DA1C4}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metalogic.UI.Header", "Metalogic.UI.Header\Metalogic.UI.Header.csproj", "{FCBD9CA5-B242-4E57-BD7F-D0827B799D47}"
 EndProject

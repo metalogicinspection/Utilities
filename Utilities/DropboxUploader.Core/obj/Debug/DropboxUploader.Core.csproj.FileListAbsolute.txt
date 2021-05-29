@@ -17,3 +17,12 @@ D:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.cspro
 D:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.csproj.CopyComplete
 D:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.dll
 D:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.pdb
+E:\Utilities\Utilities\DropboxUploader.Core\bin\Debug\DropboxUploader.Core.dll.config
+E:\Utilities\Utilities\DropboxUploader.Core\bin\Debug\DropboxUploader.Core.dll
+E:\Utilities\Utilities\DropboxUploader.Core\bin\Debug\DropboxUploader.Core.pdb
+E:\Utilities\Utilities\DropboxUploader.Core\bin\Debug\Dropbox.Api.dll
+E:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.csproj.CoreCompileInputs.cache
+E:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.csproj.CopyComplete
+E:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.dll
+E:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.pdb
+E:\Utilities\Utilities\DropboxUploader.Core\obj\Debug\DropboxUploader.Core.csprojAssemblyReference.cache

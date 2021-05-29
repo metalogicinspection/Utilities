@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DropboxUploader.Core</RootNamespace>
     <AssemblyName>DropboxUploader.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>8bfaafb2</NuGetPackageImportStamp>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -95,21 +95,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>tasklist /FI "IMAGENAME eq DropboxUploader.exe" 2&gt;NUL | find /I /N "DropboxUploader.exe"&gt;NUL
-if "%25ERRORLEVEL%25"=="0" taskkill /im dropboxuploader.exe /f
-
-
-xcopy "$(ProjectDir)$(OutDir)*" "$(SolutionDir)..\..\Bins\Dropbox\" /y
-del  "$(SolutionDir)..\..\Bins\Dropbox\*.pdb"
-del  "$(SolutionDir)..\..\Bins\Dropbox\*.vshost*"
-del  "$(SolutionDir)..\..\Bins\Dropbox\DropboxUploader.exe.config"
-del  "$(SolutionDir)..\..\Bins\Dropbox\DropboxUploader.Core.dll.config"
-del  "$(SolutionDir)..\..\Bins\Dropbox\*DataUtil.dll*"
-
-
-xcopy "$(SolutionDir)..\..\Bins\Dropbox\*" "$(SolutionDir)..\..\..\Metalogic\trunk\Bins\Dropbox\" /y
-xcopy "$(SolutionDir)..\..\Bins\Dropbox\*" "$(SolutionDir)..\..\..\Reports\trunk\Bins\Dropbox\" /y
-</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Dlls\$(TargetFileName)
+del $(SolutionDir)..\..\Reporting\Dlls\*.pdb</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

@@ -1,0 +1,18 @@
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+  <Metadata>
+    <Identity Id="27888a6a-25c8-4075-80a5-ee31eefa6d9c" Version="1.0" Language="en-US" Publisher="Eziriz" />
+    <DisplayName>.NET Reactor</DisplayName>
+    <Description xml:space="preserve">.NET Reactor Visual Studio Automation Package</Description>
+  </Metadata>
+  <Installation InstalledByMsi="false" AllUsers="true">
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VWDExpress" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VPDExpress" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VSWinExpress" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VSWinDesktopExpress" Version="14.0" />
+  </Installation>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="dotNET Reactor VSPackage.pkgdef" />
+  </Assets>
+</PackageManifest>
