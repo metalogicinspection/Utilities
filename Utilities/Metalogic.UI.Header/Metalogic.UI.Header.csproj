@@ -57,8 +57,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Dlls\$(TargetFileName)
-del $(SolutionDir)..\..\Reporting\Dlls\*.pdb</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Bins\DataUI\$(TargetFileName)
+del $(SolutionDir)..\..\Reporting\Bins\DataUI\*.pdb</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

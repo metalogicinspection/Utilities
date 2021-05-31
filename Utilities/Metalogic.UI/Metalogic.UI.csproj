@@ -214,11 +214,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Dlls\$(TargetFileName)
-del $(SolutionDir)..\..\Reporting\Dlls\*.pdb
+    <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Bins\DataUI\$(TargetFileName)
+del $(SolutionDir)..\..\Reporting\Bins\DataUI\*.pdb
 
 
-xcopy "$(SolutionDir)..\Dlls\*" "$(SolutionDir)..\..\Reporting\Dlls\" /y</PostBuildEvent>
+xcopy "$(SolutionDir)..\Dlls\*" "$(SolutionDir)..\..\Reporting\Bins\DataUI\" /y</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
