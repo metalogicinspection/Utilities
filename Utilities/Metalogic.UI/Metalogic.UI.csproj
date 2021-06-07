@@ -209,9 +209,6 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="rr.nrproj" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Bins\DataUI\$(TargetFileName)
