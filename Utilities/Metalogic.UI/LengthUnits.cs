@@ -19,6 +19,15 @@ namespace Metalogic.UI.Editors
 
         public string Mask { get; set; }
 
+        public double ConvertTo(double srcValue, LengthUnits target)
+        {
+            if (target == null)
+            {
+                throw new Exception("Length unit is null");
+            }
+            return srcValue * GetConversionFactor(target);
+        }
+
         public double GetConversionFactor(LengthUnits target)
         {
             if (this == M)

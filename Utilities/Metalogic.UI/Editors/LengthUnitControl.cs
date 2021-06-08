@@ -77,6 +77,8 @@ namespace Metalogic.UI.Editors
         {
             this.spinEdit1.Properties.Mask.EditMask = DisplayLengthUnit.Mask;
             UpdateSpinEditValue();
+
+            EditValueChanged?.Invoke(this, new EventArgs { });
         }
 
         private void SpinEdit1_EditValueChanged(object sender, EventArgs e)
@@ -357,7 +359,7 @@ namespace Metalogic.UI.Editors
             var lengthUnitPrpty = list.MemberType.GetProperty(QueryDisplayUnitFieldName);
             LengthUnits unit;
             if (lengthUnitPrpty != null
-                && (unit = prpty.GetValue(list[0]) as LengthUnits) != null)
+                && (unit = lengthUnitPrpty.GetValue(list[0]) as LengthUnits) != null)
             {
                 _doNotHandle = true;
 
