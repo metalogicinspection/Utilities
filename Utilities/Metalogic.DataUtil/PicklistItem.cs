@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Metalogic.DataUtil
 {
     [Serializable]
-    public abstract class PicklistItem : IConvertible, ISerializable, IEquatable<PicklistItem>, IComparable<PicklistItem>
+    public abstract class PicklistItem : IConvertible, ISerializable, IEquatable<PicklistItem>, IComparable<PicklistItem>, IComparable
     {
         protected bool Equals(PicklistItem other)
         {
@@ -318,6 +318,11 @@ namespace Metalogic.DataUtil
         public int CompareTo(PicklistItem other)
         {
             return Code.CompareTo(other.Code);
+        }
+
+        public int CompareTo(object obj)
+        {
+            return Code.CompareTo(obj?.ToString() ?? string.Empty);
         }
     }
 
