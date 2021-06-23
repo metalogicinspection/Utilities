@@ -14,6 +14,7 @@ namespace Gen3.UI.Grids
             AllowDelete = true;
         }
 
+        public string ColumnsViewName { get; set; } = string.Empty;
         public Type MemberType { get; set; }
         public bool AllowAddNewRow { get; set; }
 

@@ -158,7 +158,7 @@ namespace Gen3.UI.Grids
                 ? NewItemRowPosition.Bottom
                 : NewItemRowPosition.None;
 
-            setting.View.AddColumns(string.Empty, table.MemberType, Visibles.Visible);
+            setting.View.AddColumns(setting.ColumnsViewName, table.MemberType, Visibles.Visible);
             if (setting.AllowDetailButton && table.Relations.Length > 0)
             {
                 setting.View.AddDetailsButton().ButtonClick += MasterDetailViewEditor_ButtonClick;
