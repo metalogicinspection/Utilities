@@ -214,8 +214,7 @@
     <PostBuildEvent>"$(SolutionDir)..\.NET Reactor\dotNET_Reactor.Console.exe" -file $(TargetPath) -targetfile $(SolutionDir)..\..\Reporting\Bins\DataUI\$(TargetFileName)
 del $(SolutionDir)..\..\Reporting\Bins\DataUI\*.pdb
 
-
-xcopy "$(SolutionDir)..\Dlls\*" "$(SolutionDir)..\..\Reporting\Bins\DataUI\" /y</PostBuildEvent>
+</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

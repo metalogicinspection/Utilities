@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -76,7 +77,66 @@ namespace DropboxUploader.Core
             return retValue == null ? QueryRunResults.NotExist : QueryRunResults.Exist;
         }
 
-        
+
+        public QueryRunResults TryDownFTPFileBinary(string remotePath, string user, string pass, out byte[] retValue, out string serverRev, bool forceupdate, bool saveLocalCache)
+        {
+            var request = (FtpWebRequest)WebRequest.Create(remotePath);
+
+            // This example assumes the FTP site uses anonymous logon.
+            request.Credentials = new NetworkCredential(user, pass);
+
+            request.Method = WebRequestMethods.Ftp.GetDateTimestamp;
+
+            try
+            {
+                using (var resp = (FtpWebResponse)request.GetResponse())
+                {
+                    serverRev = resp.LastModified.Ticks.ToString();
+                }
+            }
+            catch (Exception)
+            {
+                retValue = null;
+                serverRev = string.Empty;
+                return QueryRunResults.ConnectionError;
+            }
+
+            retValue = !forceupdate && saveLocalCache ? ReadFileBinaryFromLocalCache(remotePath, serverRev) : null;
+            if (retValue != null)
+            {
+                return QueryRunResults.Exist;
+            }
+
+
+            request = (FtpWebRequest)WebRequest.Create(remotePath);
+            request.Credentials = new NetworkCredential(user, pass);
+
+            request.Method = WebRequestMethods.Ftp.DownloadFile;
+
+            try
+            {
+                using (var ftpStream = request.GetResponse().GetResponseStream())
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        ftpStream.CopyTo(ms);
+                        retValue = ms.ToArray();
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+                retValue = null;
+                return QueryRunResults.ConnectionError;
+            }
+
+
+            SaveDataFileLocalCache(remotePath, serverRev, retValue);
+
+            return QueryRunResults.Exist;
+        }
+
 
         public QueryRunResults TryDownFileBinary(string remotePath, out byte[] retValue, string serverRev = null, DropboxDirectClient.DownloadSavingCacheModes saveLocalCacheMode = DropboxDirectClient.DownloadSavingCacheModes.NoLocalCache)
         {
