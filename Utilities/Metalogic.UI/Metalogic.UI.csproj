@@ -147,6 +147,7 @@
     <Compile Include="Gen3Grids\SimpleGridControl.Designer.cs">
       <DependentUpon>SimpleGridControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="PressureUnits.cs" />
     <Compile Include="LengthUnits.cs" />
     <Compile Include="ProcessbarForm.cs">
       <SubType>Form</SubType>
