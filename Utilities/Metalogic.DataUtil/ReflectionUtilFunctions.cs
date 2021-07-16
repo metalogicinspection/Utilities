@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Metalogic.DataUtil
 {
@@ -11,15 +12,34 @@ namespace Metalogic.DataUtil
     {
         private static readonly Hashtable SGetTypeBuffer = new Hashtable();
 
-        public static Type GetType(string name)
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private static Type GetTypeFromCache(string name)
         {
             if (SGetTypeBuffer.ContainsKey(name))
             {
                 return (Type)SGetTypeBuffer[name];
             }
 
-            var typ = _reflector != null ? _reflector.FindType(name) : FindType(name);
+            return null;
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private static void SetTypeToCache(string name, Type typ)
+        {
             SGetTypeBuffer[name] = typ;
+        }
+
+        public static Type GetType(string name)
+        {
+            var typ = GetTypeFromCache(name);
+            if (typ != null)
+            {
+                return typ;
+            }
+
+            typ = _reflector != null ? _reflector.FindType(name) : FindType(name);
+            SetTypeToCache(name, typ);
             return typ;
         }
 
