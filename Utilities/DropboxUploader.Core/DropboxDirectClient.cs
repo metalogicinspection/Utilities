@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Specialized;
 using Dropbox.Api;
 using Dropbox.Api.Files;
 
@@ -562,7 +563,7 @@ namespace DropboxUploader.Core
 
                 Console.WriteLine("Chunk upload file...");
                 // Chunk size is 128KB.
-                const int chunkSize =  10 * 1024 * 1024;
+                const int chunkSize = 10 * 1024 * 1024;
                 var pauseEvent = new ManualResetEvent(true);
                 if (localFile.Length < chunkSize)
                 {
@@ -575,7 +576,26 @@ namespace DropboxUploader.Core
                         UploadStarted = time,
 
                     };
-                    var result =  UploadOnline(ReadAllBytes2(localFilePath), remoteFilePath);
+
+                    var bytesToUpload = ReadAllBytes2(localFilePath);
+                    var blobClient = GetBlobClient(remoteFilePath);
+                    var result = RunResults.NoInternetConnection;
+                    try
+                    {
+                        blobClient.Upload(new MemoryStream(bytesToUpload));
+                        result = RunResults.Finished;
+                    }
+                    catch (Exception e)
+                    {
+                        result = RunResults.NoInternetConnection;
+                    }
+
+                    if (result == RunResults.Finished)
+                    {
+                        result = UploadOnline(bytesToUpload, remoteFilePath);
+                    }
+
+
 
                     var current = DateTime.Now;
                     progressedEventArgs.CurrentChunkIndex = 0;
@@ -601,22 +621,60 @@ namespace DropboxUploader.Core
                         UploadStarted = time,
 
                     };
-                    using (var stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    var length = new FileInfo(localFilePath).Length;
+                    var numChunks = (int)Math.Ceiling(1d * length / chunkSize);
+
+                    var sessionId = string.Empty;
+                    progressedEventArgs.FileSizeBytes = length;
+                    progressedEventArgs.ChunksCount = numChunks;
+
+                    var blobClient = GetBlobClient(remoteFilePath);
+                    var uploadedBlobBlocks = new List<string>();
+
+                    for (byte idx = 0; idx < numChunks; idx++)
                     {
-                        var numChunks = (int)Math.Ceiling((double)stream.Length / chunkSize);
-
+                        Console.WriteLine("Start uploading chunk {0}/{1} ", idx, numChunks);
                         var buffer = new byte[chunkSize];
-                        var sessionId = string.Empty;
-                        progressedEventArgs.FileSizeBytes = stream.Length;
-                        progressedEventArgs.ChunksCount = numChunks;
-
-
-                        for (var idx = 0; idx < numChunks; idx++)
+                        var byteRead = 0;
+                        using (var stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read,
+                            FileShare.ReadWrite))
                         {
-                            Console.WriteLine("Start uploading chunk {0}/{1} ", idx, numChunks);
-                            var byteRead = stream.Read(buffer, 0, chunkSize);
-                            var chunkStartTime = DateTime.Now;
-                            
+                            byteRead = stream.Read(buffer, 0, chunkSize);
+                        }
+
+
+                        var chunkStartTime = DateTime.Now;
+
+                        try
+                        {
+                            using (var memStream = new MemoryStream(buffer, 0, byteRead))
+                            {
+                                var blockIdBytes = new byte[] { idx };
+                                var blockIdBase64 = Convert.ToBase64String(blockIdBytes); // "MA=="
+
+                                //var blockIds2 = BitConverter.GetBytes(idx);
+
+                                //var blockIdBase64 = Convert.ToBase64String(BitConverter.GetBytes(idx));
+
+                                var stageResponse = blobClient.StageBlock(blockIdBase64, memStream);
+                                var responseInfo = stageResponse.GetRawResponse(); // 201: Created
+                                uploadedBlobBlocks.Add(blockIdBase64);
+                            }
+
+                            if (idx == numChunks - 1)
+                            {
+                                blobClient.CommitBlockList(uploadedBlobBlocks);
+                            }
+
+                            progressedEventArgs.Result = RunResults.Finished;
+                        }
+                        catch (Exception e)
+                        {
+                            progressedEventArgs.Result = RunResults.NoInternetConnection;
+                        }
+
+                        if (progressedEventArgs.Result == RunResults.Finished)
+                        {
                             using (var memStream = new MemoryStream(buffer, 0, byteRead))
                             {
                                 if (idx == 0)
@@ -625,8 +683,8 @@ namespace DropboxUploader.Core
                                     {
                                         var result =
                                             ar as Task<UploadSessionStartResult>;
-                                        currentChunkReult = result?.Status?? TaskStatus.Faulted;
-                                        sessionId = currentChunkReult == TaskStatus.Faulted? string.Empty : result?.Result?.SessionId??string.Empty;
+                                        currentChunkReult = result?.Status ?? TaskStatus.Faulted;
+                                        sessionId = currentChunkReult == TaskStatus.Faulted ? string.Empty : result?.Result?.SessionId ?? string.Empty;
                                         pauseEvent.Set();
                                     });
                                 }
@@ -639,7 +697,7 @@ namespace DropboxUploader.Core
                                         {
                                             var result = ar as Task<Dropbox.Api.Files.FileMetadata>;
 
-                                            currentChunkReult = result?.Status??TaskStatus.Faulted;
+                                            currentChunkReult = result?.Status ?? TaskStatus.Faulted;
                                             pauseEvent.Set();
                                         });
                                 }
@@ -660,19 +718,19 @@ namespace DropboxUploader.Core
                                 pauseEvent.WaitOne(new TimeSpan(0, 30, 30));
 
                                 var current = DateTime.Now;
-                                Console.WriteLine("remaining {0}", (current - time).TotalMinutes / (idx + 1)  * (numChunks - idx -1)  );
+                                Console.WriteLine("remaining {0}", (current - time).TotalMinutes / (idx + 1) * (numChunks - idx - 1));
                                 progressedEventArgs.CurrentChunkIndex = idx;
                                 progressedEventArgs.CurrentChunkSpentTime = current - chunkStartTime;
                                 progressedEventArgs.TotalSpentTime = current - time;
                                 progressedEventArgs.EastimatedRemainingTime =
-                                    new TimeSpan(progressedEventArgs.CurrentChunkSpentTime.Ticks*(numChunks - idx - 1));
+                                    new TimeSpan(progressedEventArgs.CurrentChunkSpentTime.Ticks * (numChunks - idx - 1));
                                 progressedEventArgs.Result = currentChunkReult == TaskStatus.RanToCompletion
                                     ? RunResults.Finished
                                     : RunResults.NoInternetConnection;
 
                                 //DO NOT notify the last chunk
                                 //Notify last chunk at below when the file stream is closed.
-                                if (idx < numChunks -1)
+                                if (idx < numChunks - 1)
                                 {
                                     UploadProgressed?.Invoke(this, progressedEventArgs);
                                 }
@@ -686,6 +744,8 @@ namespace DropboxUploader.Core
                         }
 
 
+
+
                     }
                     //notify last chunk
                     UploadProgressed?.Invoke(this, progressedEventArgs);
@@ -694,14 +754,14 @@ namespace DropboxUploader.Core
                 {
                     return RunResults.ReadLocalFileFailed;
                 }
-                
+
 
             }
 
             Console.WriteLine("Upload Succeed");
             return RunResults.Finished;
         }
-        
+
 
         /// <summary>
         /// File.ReadAllBytes alternative to avoid read and/or write locking
@@ -763,7 +823,14 @@ namespace DropboxUploader.Core
             }
             return task;
         }
-        
-        
+
+        private static BlockBlobClient GetBlobClient(string remotePath)
+        {
+            var azureRemotePath = (remotePath.StartsWith("/") ? remotePath.Substring(1) : remotePath).ToLower();
+
+            return new BlockBlobClient(
+                "DefaultEndpointsProtocol=https;AccountName=metalogicreportingblob;AccountKey=3vWVwJcTe/2cmbKYnux7v+qk3cSkW1gbsyE1oVCKJ2kPk1uao4KiZMTxv65Sq/LK2UeDynvo4ZgvKOlHIC6wdA==;EndpointSuffix=core.windows.net",
+                "reports", azureRemotePath);
+        }
     }
 }
