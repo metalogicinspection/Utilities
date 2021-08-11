@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metalogic.UI.Header", "Meta
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DropboxUploader.Core", "DropboxUploader.Core\DropboxUploader.Core.csproj", "{90297947-6CF1-4FE1-9256-89573C3DA1C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{BCA23AED-C7F4-45E7-948E-2E61899A1A69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,18 @@ Global
 		{90297947-6CF1-4FE1-9256-89573C3DA1C4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{90297947-6CF1-4FE1-9256-89573C3DA1C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{90297947-6CF1-4FE1-9256-89573C3DA1C4}.Release|x86.Build.0 = Release|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Debug|x86.Build.0 = Debug|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Release|x86.ActiveCfg = Release|Any CPU
+		{BCA23AED-C7F4-45E7-948E-2E61899A1A69}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
