@@ -578,22 +578,24 @@ namespace DropboxUploader.Core
                     };
 
                     var bytesToUpload = ReadAllBytes2(localFilePath);
-                    var blobClient = GetBlobClient(remoteFilePath);
-                    var result = RunResults.NoInternetConnection;
-                    try
-                    {
-                        blobClient.Upload(new MemoryStream(bytesToUpload));
-                        result = RunResults.Finished;
-                    }
-                    catch (Exception e)
-                    {
-                        result = RunResults.NoInternetConnection;
-                    }
+                    //var blobClient = GetBlobClient(remoteFilePath);
+                    //var result = RunResults.NoInternetConnection;
+                    //try
+                    //{
+                    //    blobClient.Upload(new MemoryStream(bytesToUpload));
+                    //    result = RunResults.Finished;
+                    //}
+                    //catch (Exception e)
+                    //{
+                    //    result = RunResults.NoInternetConnection;
+                    //}
 
-                    if (result == RunResults.Finished)
-                    {
-                        result = UploadOnline(bytesToUpload, remoteFilePath);
-                    }
+                    //if (result == RunResults.Finished)
+                    //{
+                    //    result = UploadOnline(bytesToUpload, remoteFilePath);
+                    //}
+
+                    var result = UploadOnline(bytesToUpload, remoteFilePath);
 
 
 
@@ -780,6 +782,16 @@ namespace DropboxUploader.Core
 
         public RunResults UploadOnline(byte[] bytes, string remoteFilePath, bool saveToCache = false)
         {
+            var blobClient = GetBlobClient(remoteFilePath);
+            try
+            {
+                blobClient.Upload(new MemoryStream(bytes));
+            }
+            catch (Exception e)
+            {
+                return RunResults.NoInternetConnection;
+            }
+
             WaitForNextConnection();
             using (var httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 10 * 1000 })
             {
@@ -793,7 +805,7 @@ namespace DropboxUploader.Core
                     HttpClient = httpClient
                 };
                 var client = new DropboxClient(_accessToken, config);
-  
+
                 FileUploadHelper.WriteLog(string.Concat("Uploading binary file to remote ", remoteFilePath));
                 using (var stream = new MemoryStream(bytes))
                 {
@@ -830,7 +842,7 @@ namespace DropboxUploader.Core
 
             return new BlockBlobClient(
                 "DefaultEndpointsProtocol=https;AccountName=metalogicreportingblob;AccountKey=3vWVwJcTe/2cmbKYnux7v+qk3cSkW1gbsyE1oVCKJ2kPk1uao4KiZMTxv65Sq/LK2UeDynvo4ZgvKOlHIC6wdA==;EndpointSuffix=core.windows.net",
-                "reports", azureRemotePath);
+                azureRemotePath.StartsWith("UT Reports\\Data", StringComparison.CurrentCultureIgnoreCase) ? "pdf" : "reports", azureRemotePath);
         }
     }
 }

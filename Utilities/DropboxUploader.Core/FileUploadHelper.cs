@@ -22,6 +22,11 @@ namespace DropboxUploader.Core
 #endif
         }
 
+        public static void RemotePathCombine(object rootFolder, string v, object p)
+        {
+            throw new NotImplementedException();
+        }
+
         public static string RemoteFileName(string remotePath)
         {
             var lastIndex = remotePath.LastIndexOf('/');
