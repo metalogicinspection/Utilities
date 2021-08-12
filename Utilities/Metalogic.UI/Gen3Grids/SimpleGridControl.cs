@@ -21,8 +21,9 @@ namespace Gen3.UI.Grids
 
         public event RowCellValueChangingPostEventHandler RowCellValueChangingPost;
 
-
         public event RowCellValueChangingPostEventHandler NewRowAddingEvent;
+
+        public event RowCellValueChangingPostEventHandler RowDeletingEvent;
 
         public SimpleGridControl()
         {
