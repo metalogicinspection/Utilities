@@ -89,14 +89,25 @@ namespace Gen3.UI.Grids
 
             _doNotHandleCellValueChanged = true;
             weldView.BeginSort();
-            
+
             if (_indexPropertyInfo != null && Table.Count > 1)
             {
                 for (var i = index + 1; i < Table.Count; ++i)
                 {
-                    _indexPropertyInfo.SetValue(Table[i], i  + MinimumIndex);
+                    _indexPropertyInfo.SetValue(Table[i], i + MinimumIndex);
                 }
             }
+
+            var evt = new RowCellValueChangingPostHandleEventArgs()
+            {
+                View = View,
+                Column = null,
+                RowHandle = rowHandle,
+                RowObject = Table[index],
+                NewRow = false,
+            };
+            RowDeletingEvent?.Invoke(this, evt);
+
             Table.Remove(Table[index]);
 
             weldView.EndSort();
