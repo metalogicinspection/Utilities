@@ -16,9 +16,18 @@ namespace ConsoleApp1
             //    "/Radiographic.exe"); 
 
 
-            client.UploadOnline(
-                "C:\\Users\\tduggan\\Documents\\dummy.uvdata",
-                 "/ut reports/Details/41bd96b3-6fb6-0ebf-4a88-24aaff5acb4b.uvdata");
-        }
+            try
+            {
+                client.UploadOnline(
+                    "C:\\Users\\user\\Documents\\dummy.uvdata",
+                    "/ut reports/Details/41bd96b3-6fb6-0ebf-4a88-24aaff5acb4b.uvdata");
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+           }
     }
 }

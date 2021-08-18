@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs.Specialized;
 using Dropbox.Api;
 using Dropbox.Api.Files;
 
@@ -630,7 +629,7 @@ namespace DropboxUploader.Core
                     progressedEventArgs.FileSizeBytes = length;
                     progressedEventArgs.ChunksCount = numChunks;
 
-                    var blobClient = GetBlobClient(remoteFilePath);
+                    //var blobClient = GetBlobClient(remoteFilePath);
                     var uploadedBlobBlocks = new List<string>();
 
                     for (byte idx = 0; idx < numChunks; idx++)
@@ -647,33 +646,33 @@ namespace DropboxUploader.Core
 
                         var chunkStartTime = DateTime.Now;
 
-                        try
-                        {
-                            using (var memStream = new MemoryStream(buffer, 0, byteRead))
-                            {
-                                var blockIdBytes = new byte[] { idx };
-                                var blockIdBase64 = Convert.ToBase64String(blockIdBytes); // "MA=="
+                        //try
+                        //{
+                        //    using (var memStream = new MemoryStream(buffer, 0, byteRead))
+                        //    {
+                        //        var blockIdBytes = new byte[] { idx };
+                        //        var blockIdBase64 = Convert.ToBase64String(blockIdBytes); // "MA=="
 
-                                //var blockIds2 = BitConverter.GetBytes(idx);
+                        //        //var blockIds2 = BitConverter.GetBytes(idx);
 
-                                //var blockIdBase64 = Convert.ToBase64String(BitConverter.GetBytes(idx));
+                        //        //var blockIdBase64 = Convert.ToBase64String(BitConverter.GetBytes(idx));
 
-                                var stageResponse = blobClient.StageBlock(blockIdBase64, memStream);
-                                var responseInfo = stageResponse.GetRawResponse(); // 201: Created
-                                uploadedBlobBlocks.Add(blockIdBase64);
-                            }
+                        //        var stageResponse = blobClient.StageBlock(blockIdBase64, memStream);
+                        //        var responseInfo = stageResponse.GetRawResponse(); // 201: Created
+                        //        uploadedBlobBlocks.Add(blockIdBase64);
+                        //    }
 
-                            if (idx == numChunks - 1)
-                            {
-                                blobClient.CommitBlockList(uploadedBlobBlocks);
-                            }
+                        //    if (idx == numChunks - 1)
+                        //    {
+                        //        blobClient.CommitBlockList(uploadedBlobBlocks);
+                        //    }
 
-                            progressedEventArgs.Result = RunResults.Finished;
-                        }
-                        catch (Exception e)
-                        {
-                            progressedEventArgs.Result = RunResults.NoInternetConnection;
-                        }
+                        //    progressedEventArgs.Result = RunResults.Finished;
+                        //}
+                        //catch (Exception e)
+                        //{
+                        //    progressedEventArgs.Result = RunResults.NoInternetConnection;
+                        //}
 
                         if (progressedEventArgs.Result == RunResults.Finished)
                         {
@@ -752,7 +751,7 @@ namespace DropboxUploader.Core
                     //notify last chunk
                     UploadProgressed?.Invoke(this, progressedEventArgs);
                 }
-                catch (System.IO.IOException)
+                catch (System.IO.IOException ex)
                 {
                     return RunResults.ReadLocalFileFailed;
                 }
@@ -782,15 +781,15 @@ namespace DropboxUploader.Core
 
         public RunResults UploadOnline(byte[] bytes, string remoteFilePath, bool saveToCache = false)
         {
-            var blobClient = GetBlobClient(remoteFilePath);
-            try
-            {
-                blobClient.Upload(new MemoryStream(bytes));
-            }
-            catch (Exception e)
-            {
-                return RunResults.NoInternetConnection;
-            }
+            //var blobClient = GetBlobClient(remoteFilePath);
+            //try
+            //{
+            //    blobClient.Upload(new MemoryStream(bytes));
+            //}
+            //catch (Exception e)
+            //{
+            //    return RunResults.NoInternetConnection;
+            //}
 
             WaitForNextConnection();
             using (var httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 10 * 1000 })
@@ -836,13 +835,13 @@ namespace DropboxUploader.Core
             return task;
         }
 
-        private static BlockBlobClient GetBlobClient(string remotePath)
-        {
-            var azureRemotePath = (remotePath.StartsWith("/") ? remotePath.Substring(1) : remotePath).ToLower();
+        //private static BlockBlobClient GetBlobClient(string remotePath)
+        //{
+        //    var azureRemotePath = (remotePath.StartsWith("/") ? remotePath.Substring(1) : remotePath).ToLower();
 
-            return new BlockBlobClient(
-                "DefaultEndpointsProtocol=https;AccountName=metalogicreportingblob;AccountKey=3vWVwJcTe/2cmbKYnux7v+qk3cSkW1gbsyE1oVCKJ2kPk1uao4KiZMTxv65Sq/LK2UeDynvo4ZgvKOlHIC6wdA==;EndpointSuffix=core.windows.net",
-                azureRemotePath.StartsWith("UT Reports\\Data", StringComparison.CurrentCultureIgnoreCase) ? "pdf" : "reports", azureRemotePath);
-        }
+        //    return new BlockBlobClient(
+        //        "DefaultEndpointsProtocol=https;AccountName=metalogicreportingblob;AccountKey=3vWVwJcTe/2cmbKYnux7v+qk3cSkW1gbsyE1oVCKJ2kPk1uao4KiZMTxv65Sq/LK2UeDynvo4ZgvKOlHIC6wdA==;EndpointSuffix=core.windows.net",
+        //        azureRemotePath.StartsWith("UT Reports\\Data", StringComparison.CurrentCultureIgnoreCase) ? "pdf" : "reports", azureRemotePath);
+        //}
     }
 }
