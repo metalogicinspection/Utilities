@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 
 namespace DropboxUploader.Core
@@ -12,6 +14,17 @@ namespace DropboxUploader.Core
             if (!dir.Exists)
             {
                 dir.Create();
+                try
+                {
+                    var sec = Directory.GetAccessControl(dir.FullName);
+                    // Using this instead of the "Everyone" string means we work on non-English systems.
+                    var everyone = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+                    sec.AddAccessRule(new FileSystemAccessRule(everyone, FileSystemRights.FullControl | FileSystemRights.Synchronize, InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
+                    dir.SetAccessControl(sec);
+                }
+                catch (Exception e)
+                {
+                }
             }
         }
 
