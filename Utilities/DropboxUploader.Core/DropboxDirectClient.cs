@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -547,7 +548,7 @@ namespace DropboxUploader.Core
                 throw new Exception("Local File Not Found.");
             }
 
-            using (HttpClient httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 10 * 1000 })
+            using (HttpClient httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 30 * 1000 })
             {
                 // Specify request level timeout which decides maximum time taht can be spent on
                 // download/upload files.
@@ -792,7 +793,7 @@ namespace DropboxUploader.Core
             //}
 
             WaitForNextConnection();
-            using (var httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 10 * 1000 })
+            using (var httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 30 * 1000 })
             {
                 // Specify request level timeout which decides maximum time taht can be spent on
                 // download/upload files.
@@ -814,6 +815,23 @@ namespace DropboxUploader.Core
                         FileUploadHelper.WriteLog("Failed " + response.Exception);
                         return RunResults.NoInternetConnection;
                     }
+
+                    if (response.Result.Size != (ulong) bytes.Length)
+                    {
+                        var stackTrace = new StackTrace();           // get call stack
+                        var stackFrames = stackTrace.GetFrames();  // get method calls (frames)
+                        var checkPrevious = 1;
+                        var callerMethod = stackFrames?.Length >= checkPrevious + 1 ? stackFrames[checkPrevious].GetMethod() : null;
+                        if (callerMethod != null && callerMethod.ReflectedType == GetType() &&
+                            callerMethod.Name.Equals("UploadOnline", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            throw new Exception("Uploading file " + remoteFilePath + " with size " + bytes.Length +
+                                                " server received " + response.Result.Size);
+                        }
+
+                        return UploadOnline(bytes, remoteFilePath, saveToCache);
+                    }
+
                     if (saveToCache)
                     {
                         SaveDataFileLocalCache(remoteFilePath, response.Result.Rev, bytes);

@@ -1,6 +1,7 @@
 ﻿using DropboxUploader.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,9 +19,10 @@ namespace ConsoleApp1
 
             try
             {
+                var bytes = File.ReadAllBytes("e:\\test.mtreport");
                 client.UploadOnline(
-                    "C:\\Users\\user\\Documents\\dummy.uvdata",
-                    "/ut reports/Details/41bd96b3-6fb6-0ebf-4a88-24aaff5acb4b.uvdata");
+                    bytes,
+                    "/test/test.text");
 
             }
             catch (Exception e)
