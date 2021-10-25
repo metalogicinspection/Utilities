@@ -55,6 +55,13 @@ namespace DropboxUploader.Core
 
         public DropboxDirectClient(string localUploadDirBase, string token)
         {
+            _accessToken = token;
+
+            if (string.IsNullOrWhiteSpace(localUploadDirBase))
+            {
+                return;
+            }
+
             _directoryBase = new DirectoryInfo(localUploadDirBase);
             FileUploadHelper.CheckCreateDir(_directoryBase);
             
@@ -68,7 +75,6 @@ namespace DropboxUploader.Core
             FileUploadHelper.CheckCreateDir(_directoryCheckSum);
             
 
-            _accessToken = token;
         }
 
 
@@ -77,71 +83,17 @@ namespace DropboxUploader.Core
             retValue = ReadFileBinaryFromLocalCache(remotePath, serverRev);
             return retValue == null ? QueryRunResults.NotExist : QueryRunResults.Exist;
         }
-
-
-        public QueryRunResults TryDownFTPFileBinary(string remotePath, string user, string pass, out byte[] retValue, out string serverRev, bool forceupdate, bool saveLocalCache)
-        {
-            var request = (FtpWebRequest)WebRequest.Create(remotePath);
-
-            // This example assumes the FTP site uses anonymous logon.
-            request.Credentials = new NetworkCredential(user, pass);
-
-            request.Method = WebRequestMethods.Ftp.GetDateTimestamp;
-
-            try
-            {
-                using (var resp = (FtpWebResponse)request.GetResponse())
-                {
-                    serverRev = resp.LastModified.Ticks.ToString();
-                }
-            }
-            catch (Exception)
-            {
-                retValue = null;
-                serverRev = string.Empty;
-                return QueryRunResults.ConnectionError;
-            }
-
-            retValue = !forceupdate && saveLocalCache ? ReadFileBinaryFromLocalCache(remotePath, serverRev) : null;
-            if (retValue != null)
-            {
-                return QueryRunResults.Exist;
-            }
-
-
-            request = (FtpWebRequest)WebRequest.Create(remotePath);
-            request.Credentials = new NetworkCredential(user, pass);
-
-            request.Method = WebRequestMethods.Ftp.DownloadFile;
-
-            try
-            {
-                using (var ftpStream = request.GetResponse().GetResponseStream())
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        ftpStream.CopyTo(ms);
-                        retValue = ms.ToArray();
-                    }
-                }
-
-            }
-            catch (Exception)
-            {
-                retValue = null;
-                return QueryRunResults.ConnectionError;
-            }
-
-
-            SaveDataFileLocalCache(remotePath, serverRev, retValue);
-
-            return QueryRunResults.Exist;
-        }
-
+        
 
         public QueryRunResults TryDownFileBinary(string remotePath, out byte[] retValue, string serverRev = null, DropboxDirectClient.DownloadSavingCacheModes saveLocalCacheMode = DropboxDirectClient.DownloadSavingCacheModes.NoLocalCache)
         {
             FileUploadHelper.WriteLog("download mode" + saveLocalCacheMode);
+            if (_directoryInfo == null)
+            {
+                saveLocalCacheMode = DownloadSavingCacheModes.NoLocalCache;
+            }
+
+
             retValue = saveLocalCacheMode == DownloadSavingCacheModes.ReadLocalCacheFirst ? ReadFileBinaryFromLocalCache(remotePath, serverRev) : null;
             if (retValue != null)
             {
@@ -163,7 +115,7 @@ namespace DropboxUploader.Core
 
                 var hashCode = FileUploadHelper.GenerateGuidStr(string.Concat(remotePath, _accessToken).ToUpper());
 
-                var localCachedFilePath = Path.Combine(_directoryCache.FullName, hashCode);
+                var localCachedFilePath = _directoryCache != null ? Path.Combine(_directoryCache.FullName, hashCode) : string.Empty;
 
                 if (saveLocalCacheMode == DownloadSavingCacheModes.ReadLocalCacheFirst && File.Exists(localCachedFilePath) && string.IsNullOrWhiteSpace(serverRev)) //if this file may have local cached file, but just server version unknow
                 {
