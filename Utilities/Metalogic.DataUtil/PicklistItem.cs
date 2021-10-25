@@ -116,22 +116,46 @@ namespace Metalogic.DataUtil
 
         public static T GetPickListItem<T>(string code) where T : PicklistItem
         {
-            return GetPickList<T>()
-                .FirstOrDefault(x => x.Code == code) as T;
+            var t = typeof(T);
+            return GetPickListItem(t, code) as T;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static PicklistItem GetPickListItem(Type t, string code)
         {
             var items = GetPickListByType(t);
-            return items.FirstOrDefault(x => code.Equals(x.Code))
-                   ?? items.FirstOrDefault(x => code.Equals(x.Code, StringComparison.OrdinalIgnoreCase))
-                   ?? items.FirstOrDefault(x => code.Equals(x.BackupCode1, StringComparison.OrdinalIgnoreCase))
-                   ?? items.FirstOrDefault(x => code.Equals(x.BackupCode2, StringComparison.OrdinalIgnoreCase))
-                   ?? items.FirstOrDefault(x => code.Equals(x.BackupCode3, StringComparison.OrdinalIgnoreCase));}
+            var retValue = items.FirstOrDefault(x => code.Equals(x.Code))
+                   ?? items.FirstOrDefault(x => code.Equals(x.Code, StringComparison.InvariantCultureIgnoreCase))
+                   ?? items.FirstOrDefault(x => code.Equals(x.BackupCode1, StringComparison.InvariantCultureIgnoreCase))
+                   ?? items.FirstOrDefault(x => code.Equals(x.BackupCode2, StringComparison.InvariantCultureIgnoreCase))
+                   ?? items.FirstOrDefault(x => code.Equals(x.BackupCode3, StringComparison.InvariantCultureIgnoreCase));
+
+            if (retValue != null)
+            {
+                return retValue;
+            }
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return null;
+            }
+
+            try
+            {
+                var item = Activator.CreateInstance(t) as PicklistItem;
+                item.Code = code;
+                retValue = item;
+            }
+            catch (Exception e)
+            {
+                retValue = null;
+            }
+
+            return retValue;
+        }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static IEnumerable<PicklistItem> GetPickListByType(Type t)
+        public static PicklistItem[] GetPickListByType(Type t)
         {
             if (t == null || !typeof(PicklistItem).IsAssignableFrom(t))
             {
@@ -197,7 +221,8 @@ namespace Metalogic.DataUtil
 
         public TypeCode GetTypeCode()
         {
-            return TypeCode.String;}
+            return TypeCode.String;
+        }
 
         public bool ToBoolean(IFormatProvider provider)
         {
@@ -276,7 +301,8 @@ namespace Metalogic.DataUtil
 
         public object ToType(Type conversionType, IFormatProvider provider)
         {
-            return this;}
+            return this;
+        }
 
         protected PicklistItem(SerializationInfo info, StreamingContext context)
         {
