@@ -19,10 +19,9 @@ namespace ConsoleApp1
 
             try
             {
-                var bytes = File.ReadAllBytes("e:\\test.mtreport");
-                client.UploadOnline(
-                    bytes,
-                    "/test/test.text");
+                var result = client.UploadOnline(
+                    "e:\\test.uvdata",
+                    "/test/test.uvdata");
 
             }
             catch (Exception e)

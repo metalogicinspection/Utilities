@@ -581,9 +581,7 @@ namespace DropboxUploader.Core
                     var sessionId = string.Empty;
                     progressedEventArgs.FileSizeBytes = length;
                     progressedEventArgs.ChunksCount = numChunks;
-
-                    //var blobClient = GetBlobClient(remoteFilePath);
-                    var uploadedBlobBlocks = new List<string>();
+                    
 
                     for (byte idx = 0; idx < numChunks; idx++)
                     {
@@ -598,102 +596,75 @@ namespace DropboxUploader.Core
 
 
                         var chunkStartTime = DateTime.Now;
+                        
 
-                        //try
-                        //{
-                        //    using (var memStream = new MemoryStream(buffer, 0, byteRead))
-                        //    {
-                        //        var blockIdBytes = new byte[] { idx };
-                        //        var blockIdBase64 = Convert.ToBase64String(blockIdBytes); // "MA=="
-
-                        //        //var blockIds2 = BitConverter.GetBytes(idx);
-
-                        //        //var blockIdBase64 = Convert.ToBase64String(BitConverter.GetBytes(idx));
-
-                        //        var stageResponse = blobClient.StageBlock(blockIdBase64, memStream);
-                        //        var responseInfo = stageResponse.GetRawResponse(); // 201: Created
-                        //        uploadedBlobBlocks.Add(blockIdBase64);
-                        //    }
-
-                        //    if (idx == numChunks - 1)
-                        //    {
-                        //        blobClient.CommitBlockList(uploadedBlobBlocks);
-                        //    }
-
-                        //    progressedEventArgs.Result = RunResults.Finished;
-                        //}
-                        //catch (Exception e)
-                        //{
-                        //    progressedEventArgs.Result = RunResults.NoInternetConnection;
-                        //}
-
-                        if (progressedEventArgs.Result == RunResults.Finished)
+                        using (var memStream = new MemoryStream(buffer, 0, byteRead))
                         {
-                            using (var memStream = new MemoryStream(buffer, 0, byteRead))
+                            if (idx == 0)
                             {
-                                if (idx == 0)
+
+                                client.Files.BeginUploadSessionStart(memStream, ar =>
                                 {
-                                    client.Files.BeginUploadSessionStart(memStream, ar =>
+                                    var result =
+                                        ar as Task<UploadSessionStartResult>;
+                                    currentChunkReult = result?.Status ?? TaskStatus.Faulted;
+                                    sessionId = currentChunkReult == TaskStatus.Faulted ? string.Empty : result?.Result?.SessionId ?? string.Empty;
+                                    pauseEvent.Set();
+                                });
+                            }
+                            else if (idx == numChunks - 1)
+                            {
+                                Console.WriteLine("Last chunk uploading");
+                                var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
+                                client.Files.BeginUploadSessionFinish(cursor, new CommitInfo(remoteFilePath), memStream,
+                                    ar =>
                                     {
-                                        var result =
-                                            ar as Task<UploadSessionStartResult>;
+                                        var result = ar as Task<Dropbox.Api.Files.FileMetadata>;
+
                                         currentChunkReult = result?.Status ?? TaskStatus.Faulted;
-                                        sessionId = currentChunkReult == TaskStatus.Faulted ? string.Empty : result?.Result?.SessionId ?? string.Empty;
                                         pauseEvent.Set();
                                     });
-                                }
-                                else if (idx == numChunks - 1)
-                                {
-                                    Console.WriteLine("Last chunk uploading");
-                                    var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
-                                    client.Files.BeginUploadSessionFinish(cursor, new CommitInfo(remoteFilePath), memStream,
-                                        ar =>
-                                        {
-                                            var result = ar as Task<Dropbox.Api.Files.FileMetadata>;
+                            }
+                            else
+                            {
+                                var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
+                                client.Files.BeginUploadSessionAppend(cursor, memStream,
+                                    ar =>
+                                    {
+                                        var result = ar as Task<bool>;
 
-                                            currentChunkReult = result?.Status ?? TaskStatus.Faulted;
-                                            pauseEvent.Set();
-                                        });
-                                }
-                                else
-                                {
-                                    var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
-                                    client.Files.BeginUploadSessionAppend(cursor, memStream,
-                                        ar =>
-                                        {
-                                            var result = ar as Task<bool>;
+                                        currentChunkReult = result?.Status ?? TaskStatus.Faulted;
+                                        pauseEvent.Set();
+                                    });
+                            }
 
-                                            currentChunkReult = result?.Status ?? TaskStatus.Faulted;
-                                            pauseEvent.Set();
-                                        });
-                                }
+                            pauseEvent.Reset();
+                            pauseEvent.WaitOne(new TimeSpan(0, 30, 30));
 
-                                pauseEvent.Reset();
-                                pauseEvent.WaitOne(new TimeSpan(0, 30, 30));
+                            var current = DateTime.Now;
+                            Console.WriteLine("remaining {0}", (current - time).TotalMinutes / (idx + 1) * (numChunks - idx - 1));
+                            progressedEventArgs.CurrentChunkIndex = idx;
+                            progressedEventArgs.CurrentChunkSpentTime = current - chunkStartTime;
+                            progressedEventArgs.TotalSpentTime = current - time;
+                            progressedEventArgs.EastimatedRemainingTime =
+                                new TimeSpan(progressedEventArgs.CurrentChunkSpentTime.Ticks * (numChunks - idx - 1));
+                            progressedEventArgs.Result = currentChunkReult == TaskStatus.RanToCompletion
+                                ? RunResults.Finished
+                                : RunResults.NoInternetConnection;
 
-                                var current = DateTime.Now;
-                                Console.WriteLine("remaining {0}", (current - time).TotalMinutes / (idx + 1) * (numChunks - idx - 1));
-                                progressedEventArgs.CurrentChunkIndex = idx;
-                                progressedEventArgs.CurrentChunkSpentTime = current - chunkStartTime;
-                                progressedEventArgs.TotalSpentTime = current - time;
-                                progressedEventArgs.EastimatedRemainingTime =
-                                    new TimeSpan(progressedEventArgs.CurrentChunkSpentTime.Ticks * (numChunks - idx - 1));
-                                progressedEventArgs.Result = currentChunkReult == TaskStatus.RanToCompletion
-                                    ? RunResults.Finished
-                                    : RunResults.NoInternetConnection;
+                            //DO NOT notify the last chunk
+                            //Notify last chunk at below when the file stream is closed.
+                            if (idx < numChunks - 1)
+                            {
+                                UploadProgressed?.Invoke(this, progressedEventArgs);
+                            }
+                            
 
-                                //DO NOT notify the last chunk
-                                //Notify last chunk at below when the file stream is closed.
-                                if (idx < numChunks - 1)
-                                {
-                                    UploadProgressed?.Invoke(this, progressedEventArgs);
-                                }
 
-                                if (currentChunkReult != TaskStatus.RanToCompletion)
-                                {
-                                    Console.WriteLine("Upload Failed");
-                                    return RunResults.NoInternetConnection;
-                                }
+                            if (currentChunkReult != TaskStatus.RanToCompletion || (idx >= numChunks - 1 && this.FileExist(remoteFilePath) != QueryRunResults.Exist))
+                            {
+                                Console.WriteLine("Upload Failed");
+                                return RunResults.NoInternetConnection;
                             }
                         }
 
