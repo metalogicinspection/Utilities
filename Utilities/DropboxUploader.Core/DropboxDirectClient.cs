@@ -500,7 +500,7 @@ namespace DropboxUploader.Core
                 throw new Exception("Local File Not Found.");
             }
 
-            using (HttpClient httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 30 * 1000 })
+            using (HttpClient httpClient = new HttpClient(new WebRequestHandler { ReadWriteTimeout = 10 * 1000 })
             {
                 // Specify request level timeout which decides maximum time taht can be spent on
                 // download/upload files.
@@ -528,28 +528,7 @@ namespace DropboxUploader.Core
                         UploadStarted = time,
 
                     };
-
-                    var bytesToUpload = ReadAllBytes2(localFilePath);
-                    //var blobClient = GetBlobClient(remoteFilePath);
-                    //var result = RunResults.NoInternetConnection;
-                    //try
-                    //{
-                    //    blobClient.Upload(new MemoryStream(bytesToUpload));
-                    //    result = RunResults.Finished;
-                    //}
-                    //catch (Exception e)
-                    //{
-                    //    result = RunResults.NoInternetConnection;
-                    //}
-
-                    //if (result == RunResults.Finished)
-                    //{
-                    //    result = UploadOnline(bytesToUpload, remoteFilePath);
-                    //}
-
-                    var result = UploadOnline(bytesToUpload, remoteFilePath);
-
-
+                    var result = UploadOnline(ReadAllBytes2(localFilePath), remoteFilePath);
 
                     var current = DateTime.Now;
                     progressedEventArgs.CurrentChunkIndex = 0;
@@ -575,107 +554,96 @@ namespace DropboxUploader.Core
                         UploadStarted = time,
 
                     };
-                    var length = new FileInfo(localFilePath).Length;
-                    var numChunks = (int)Math.Ceiling(1d * length / chunkSize);
-
-                    var sessionId = string.Empty;
-                    progressedEventArgs.FileSizeBytes = length;
-                    progressedEventArgs.ChunksCount = numChunks;
-                    
-
-                    for (byte idx = 0; idx < numChunks; idx++)
+                    using (var stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        Console.WriteLine("Start uploading chunk {0}/{1} ", idx, numChunks);
+                        var numChunks = (int)Math.Ceiling((double)stream.Length / chunkSize);
+
                         var buffer = new byte[chunkSize];
-                        var byteRead = 0;
-                        using (var stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read,
-                            FileShare.ReadWrite))
+                        var sessionId = string.Empty;
+                        progressedEventArgs.FileSizeBytes = stream.Length;
+                        progressedEventArgs.ChunksCount = numChunks;
+
+
+                        for (var idx = 0; idx < numChunks; idx++)
                         {
-                            byteRead = stream.Read(buffer, 0, chunkSize);
-                        }
+                            Console.WriteLine("Start uploading chunk {0}/{1} ", idx, numChunks);
+                            var byteRead = stream.Read(buffer, 0, chunkSize);
+                            var chunkStartTime = DateTime.Now;
 
-
-                        var chunkStartTime = DateTime.Now;
-                        
-
-                        using (var memStream = new MemoryStream(buffer, 0, byteRead))
-                        {
-                            if (idx == 0)
+                            using (var memStream = new MemoryStream(buffer, 0, byteRead))
                             {
-
-                                client.Files.BeginUploadSessionStart(memStream, ar =>
+                                if (idx == 0)
                                 {
-                                    var result =
-                                        ar as Task<UploadSessionStartResult>;
-                                    currentChunkReult = result?.Status ?? TaskStatus.Faulted;
-                                    sessionId = currentChunkReult == TaskStatus.Faulted ? string.Empty : result?.Result?.SessionId ?? string.Empty;
-                                    pauseEvent.Set();
-                                });
-                            }
-                            else if (idx == numChunks - 1)
-                            {
-                                Console.WriteLine("Last chunk uploading");
-                                var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
-                                client.Files.BeginUploadSessionFinish(cursor, new CommitInfo(remoteFilePath), memStream,
-                                    ar =>
+                                    client.Files.BeginUploadSessionStart(memStream, ar =>
                                     {
-                                        var result = ar as Task<Dropbox.Api.Files.FileMetadata>;
-
+                                        var result =
+                                            ar as Task<UploadSessionStartResult>;
                                         currentChunkReult = result?.Status ?? TaskStatus.Faulted;
+                                        sessionId = currentChunkReult == TaskStatus.Faulted ? string.Empty : result?.Result?.SessionId ?? string.Empty;
                                         pauseEvent.Set();
                                     });
-                            }
-                            else
-                            {
-                                var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
-                                client.Files.BeginUploadSessionAppend(cursor, memStream,
-                                    ar =>
-                                    {
-                                        var result = ar as Task<bool>;
+                                }
+                                else if (idx == numChunks - 1)
+                                {
+                                    Console.WriteLine("Last chunk uploading");
+                                    var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
+                                    client.Files.BeginUploadSessionFinish(cursor, new CommitInfo(remoteFilePath), memStream,
+                                        ar =>
+                                        {
+                                            var result = ar as Task<Dropbox.Api.Files.FileMetadata>;
 
-                                        currentChunkReult = result?.Status ?? TaskStatus.Faulted;
-                                        pauseEvent.Set();
-                                    });
-                            }
+                                            currentChunkReult = result?.Status ?? TaskStatus.Faulted;
+                                            pauseEvent.Set();
+                                        });
+                                }
+                                else
+                                {
+                                    var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
+                                    client.Files.BeginUploadSessionAppend(cursor, memStream,
+                                        ar =>
+                                        {
+                                            var result = ar as Task<bool>;
 
-                            pauseEvent.Reset();
-                            pauseEvent.WaitOne(new TimeSpan(0, 30, 30));
+                                            currentChunkReult = result?.Status ?? TaskStatus.Faulted;
+                                            pauseEvent.Set();
+                                        });
+                                }
 
-                            var current = DateTime.Now;
-                            Console.WriteLine("remaining {0}", (current - time).TotalMinutes / (idx + 1) * (numChunks - idx - 1));
-                            progressedEventArgs.CurrentChunkIndex = idx;
-                            progressedEventArgs.CurrentChunkSpentTime = current - chunkStartTime;
-                            progressedEventArgs.TotalSpentTime = current - time;
-                            progressedEventArgs.EastimatedRemainingTime =
-                                new TimeSpan(progressedEventArgs.CurrentChunkSpentTime.Ticks * (numChunks - idx - 1));
-                            progressedEventArgs.Result = currentChunkReult == TaskStatus.RanToCompletion
-                                ? RunResults.Finished
-                                : RunResults.NoInternetConnection;
+                                pauseEvent.Reset();
+                                pauseEvent.WaitOne(new TimeSpan(0, 30, 30));
 
-                            //DO NOT notify the last chunk
-                            //Notify last chunk at below when the file stream is closed.
-                            if (idx < numChunks - 1)
-                            {
-                                UploadProgressed?.Invoke(this, progressedEventArgs);
-                            }
-                            
+                                var current = DateTime.Now;
+                                Console.WriteLine("remaining {0}", (current - time).TotalMinutes / (idx + 1) * (numChunks - idx - 1));
+                                progressedEventArgs.CurrentChunkIndex = idx;
+                                progressedEventArgs.CurrentChunkSpentTime = current - chunkStartTime;
+                                progressedEventArgs.TotalSpentTime = current - time;
+                                progressedEventArgs.EastimatedRemainingTime =
+                                    new TimeSpan(progressedEventArgs.CurrentChunkSpentTime.Ticks * (numChunks - idx - 1));
+                                progressedEventArgs.Result = currentChunkReult == TaskStatus.RanToCompletion
+                                    ? RunResults.Finished
+                                    : RunResults.NoInternetConnection;
 
+                                //DO NOT notify the last chunk
+                                //Notify last chunk at below when the file stream is closed.
+                                if (idx < numChunks - 1)
+                                {
+                                    UploadProgressed?.Invoke(this, progressedEventArgs);
+                                }
 
-                            if (currentChunkReult != TaskStatus.RanToCompletion || (idx >= numChunks - 1 && this.FileExist(remoteFilePath) != QueryRunResults.Exist))
-                            {
-                                Console.WriteLine("Upload Failed");
-                                return RunResults.NoInternetConnection;
+                                if (currentChunkReult != TaskStatus.RanToCompletion)
+                                {
+                                    Console.WriteLine("Upload Failed");
+                                    return RunResults.NoInternetConnection;
+                                }
                             }
                         }
-
-
 
 
                     }
                     //notify last chunk
                     UploadProgressed?.Invoke(this, progressedEventArgs);
                 }
-                catch (System.IO.IOException ex)
+                catch (System.IO.IOException)
                 {
                     return RunResults.ReadLocalFileFailed;
                 }
