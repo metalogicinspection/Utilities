@@ -114,14 +114,25 @@ namespace Metalogic.DataUtil
             return itms.Cast<T>().ToArray();
         }
 
-        public static T GetPickListItem<T>(string code) where T : PicklistItem
+        public static T GetPickListItem<T>(string code, bool createDefaultIfNotFound = true) where T : PicklistItem
         {
             var t = typeof(T);
-            return GetPickListItem(t, code) as T;
+            return GetPickListItem(t, code, createDefaultIfNotFound) as T;
+        }
+
+        public bool IfCodeIsInPickList(Type t, string code)
+        {
+            return GetPickListItem(t, code, false) != null;
+        }
+
+        public bool IfCodeIsInPickList<T>(string code) where T : PicklistItem
+        {
+            var t = typeof(T);
+            return GetPickListItem(t, code, false) != null;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static PicklistItem GetPickListItem(Type t, string code)
+        public static PicklistItem GetPickListItem(Type t, string code, bool createDefaultIfNotFound = true)
         {
             var items = GetPickListByType(t);
             var retValue = items.FirstOrDefault(x => code.Equals(x.Code))
@@ -133,6 +144,11 @@ namespace Metalogic.DataUtil
             if (retValue != null)
             {
                 return retValue;
+            }
+
+            if (!createDefaultIfNotFound)
+            {
+                return null;
             }
 
             if (string.IsNullOrWhiteSpace(code))
