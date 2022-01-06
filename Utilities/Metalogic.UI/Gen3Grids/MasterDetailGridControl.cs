@@ -243,23 +243,28 @@ namespace Gen3.UI.Grids
             {
                 return;
             }
-            var v = gridControl1.FocusedView as GridView;
+            var v = (sender as GridView)??gridControl1.FocusedView as GridView;
             if (v == null)
             {
+                Console.WriteLine("View not found");
                 return;
             }
             if (e.RowHandle < 0)
             {
+                Console.WriteLine("Row is empty");
                 return;
             }
             var setting = Settings.FirstOrDefault(x => x.View.Name == v.Name);
             if (setting == null)
             {
+                Console.WriteLine("setting not found");
                 return;
             }
 
             var prpty = setting.MemberType.GetProperty(e.Column.FieldName);
             if (prpty == null){
+
+                Console.WriteLine("property not found");
                 return;
             }
 
@@ -279,6 +284,7 @@ namespace Gen3.UI.Grids
             var obj = v.GetFocusedRow();
             if (obj == null)
             {
+                Console.WriteLine("focused row not found");
                 return;
             }
 
@@ -358,7 +364,7 @@ namespace Gen3.UI.Grids
             {
                 return;
             }
-            var v = gridControl1.FocusedView as GridView;
+            var v = (sender as GridView) ?? gridControl1.FocusedView as GridView;
             if (v == null)
             {
                 return;

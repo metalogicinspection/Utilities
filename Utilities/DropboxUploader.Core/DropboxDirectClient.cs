@@ -587,7 +587,8 @@ namespace DropboxUploader.Core
                                 {
                                     Console.WriteLine("Last chunk uploading");
                                     var cursor = new UploadSessionCursor(sessionId, (ulong)(chunkSize * idx));
-                                    client.Files.BeginUploadSessionFinish(cursor, new CommitInfo(remoteFilePath), memStream,
+                                    var commitInfo = new CommitInfo(remoteFilePath, Dropbox.Api.Files.WriteMode.Overwrite.Instance);
+                                    client.Files.BeginUploadSessionFinish(cursor, commitInfo, memStream,
                                         ar =>
                                         {
                                             var result = ar as Task<Dropbox.Api.Files.FileMetadata>;

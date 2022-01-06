@@ -13,22 +13,22 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             var client = DropboxHelper.GetDirectClient();
-            //client.UploadOnline(@"E:\Reporting\Radiographic\Radiographic\bin\Release\Radiographic.exe",
-            //    "/Radiographic.exe"); 
+            client.UploadOnline(@"C:\ProgramData\Metalogic\PendingCrossionFile\fbb48f9c-6f79-4de7-8163-cc6094e64885",
+             "/corrosion monitoring/999-99999/2bb2f85c-f490-4b99-868c-bb6750e32e9a.cmreport55"); 
 
 
-            try
-            {
-                var result = client.UploadOnline(
-                    "e:\\test.uvdata",
-                    "/test/test.uvdata");
+            //try
+            //{
+            //    var result = client.UploadOnline(
+            //        "e:\\test.uvdata",
+            //        "/test/test.uvdata");
 
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //    throw;
+            //}
            }
     }
 }
