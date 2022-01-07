@@ -11,6 +11,9 @@ namespace Metalogic.UI
     public class LoadFileEvent<T> : EventArgs
     {
         public T File { get; set; }
+        public int CurIndex { get; set; }
+
+        public int FilesCount { get; set; }
     }
 
     public partial class GenericLoadingForm<T> : Form
@@ -131,22 +134,26 @@ namespace Metalogic.UI
                 Parallel.ForEach(
                     files,
                     new ParallelOptions { MaxDegreeOfParallelism = _treadNo },
-                    HandleFileInternal
+                    (line, state, index) =>
+                    {
+                        HandleFileInternal(line, (int)index);
+                    }
                 );
             }
             else
             {
+                var index = 0;
                 foreach (var file in files)
                 {
-                    HandleFileInternal(file);
+                    HandleFileInternal(file, index++);
                 }
             }
         }
 
-        private void HandleFileInternal(T file)
+        private void HandleFileInternal(T file, int index)
         {
             HandleFile(file);
-            ProcessFile?.Invoke(this, new LoadFileEvent<T> { File = file });
+            ProcessFile?.Invoke(this, new LoadFileEvent<T> { File = file, CurIndex = index, FilesCount = _files.Count });
 
             // Perform the increment on the ProgressBar.
             BeginInvoke(new IncreaseCounterd(IncreaseCounter), null);
@@ -163,5 +170,14 @@ namespace Metalogic.UI
         {
             
         }
+
+        public void SetTitle(string title)
+        {
+            BeginInvoke(new Action(() =>
+            {
+                Text = title;
+            }));
+        }
+
     }
 }

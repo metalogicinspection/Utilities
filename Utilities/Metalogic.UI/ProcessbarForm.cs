@@ -84,6 +84,19 @@ namespace Metalogic.UI
                 Close();
             }));
         }
+
+
+        public void SetTitle(string title)
+        {
+            BeginInvoke(new Action(() =>
+            {
+                Text = title;
+            }));
+        }
+
+
+        public int CurrentStep => pBar1.Step;
+        public int MaxStep => pBar1.Maximum;
     }
         
         
