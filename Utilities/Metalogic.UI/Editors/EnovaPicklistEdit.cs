@@ -41,14 +41,20 @@ namespace Metalogic.UI.Editors
 
         void HandleQueryPopUp(object sender, CancelEventArgs e)
         {
+            var index = 101;
             foreach (GridColumn col in Properties.View.Columns)
             {
+                
                 if (_columnFieldToViewIndex.ContainsKey(col.FieldName))
                 {
                     col.VisibleIndex = _columnFieldToViewIndex[col.FieldName];
                 }
 
-                if (col.VisibleIndex < 0)
+                if (AdditionalDropDownColumns.Contains(col.FieldName))
+                {
+                    col.VisibleIndex = ++index;
+                }
+                else if (col.VisibleIndex < 0)
                 {
 
                 }
@@ -249,6 +255,8 @@ namespace Metalogic.UI.Editors
         }
 
         public DataModel Model { get; private set; }
+
+        public List<string> AdditionalDropDownColumns = new List<string>();
     }
 
 }
