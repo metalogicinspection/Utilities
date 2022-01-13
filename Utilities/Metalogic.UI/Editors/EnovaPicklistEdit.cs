@@ -41,7 +41,6 @@ namespace Metalogic.UI.Editors
 
         void HandleQueryPopUp(object sender, CancelEventArgs e)
         {
-            var index = 101;
             foreach (GridColumn col in Properties.View.Columns)
             {
                 
@@ -50,10 +49,6 @@ namespace Metalogic.UI.Editors
                     col.VisibleIndex = _columnFieldToViewIndex[col.FieldName];
                 }
 
-                if (AdditionalDropDownColumns.Contains(col.FieldName))
-                {
-                    col.VisibleIndex = ++index;
-                }
                 else if (col.VisibleIndex < 0)
                 {
 
@@ -78,6 +73,16 @@ namespace Metalogic.UI.Editors
                 {
                     col.Visible = Test(DisplayValueMode, PicklistDisplayValueModes.CustomFields);
                 }
+            }
+
+            var index = 101;
+            foreach (var additionalDropDownColumn in AdditionalDropDownColumns)
+            {
+                Properties.View.Columns.Add(new GridColumn()
+                {
+                    FieldName = additionalDropDownColumn, Caption = additionalDropDownColumn.SplitByUpperCase(),
+                    VisibleIndex = ++index
+                });
             }
 
             //var width = 0;
