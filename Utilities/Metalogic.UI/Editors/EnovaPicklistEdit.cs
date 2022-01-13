@@ -44,12 +44,25 @@ namespace Metalogic.UI.Editors
             var index = 101;
             foreach (var additionalDropDownColumn in AdditionalDropDownColumns)
             {
-                Properties.View.Columns.Add(new GridColumn()
+                bool _isAddedColumn = false;
+                int i = 0;
+                while (!_isAddedColumn && i < Properties.View.Columns.Count)
                 {
-                    FieldName = additionalDropDownColumn,
-                    Caption = additionalDropDownColumn.SplitByUpperCase(),
-                    VisibleIndex = ++index
-                });
+                    if (Properties.View.Columns[i].FieldName.Equals(additionalDropDownColumn))
+                    {
+                        _isAddedColumn = true;
+                    }
+                    i++;
+                }
+                if (!_isAddedColumn)
+                {
+                    Properties.View.Columns.Add(new GridColumn()
+                    {
+                        FieldName = additionalDropDownColumn,
+                        Caption = additionalDropDownColumn.SplitByUpperCase(),
+                        VisibleIndex = ++index
+                    });
+                }
             }
             foreach (GridColumn col in Properties.View.Columns)
             {
