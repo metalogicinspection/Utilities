@@ -46,6 +46,7 @@
     <Compile Include="DataTypeAttributeInfo\DataMaxString.cs" />
     <Compile Include="DataTypeAttributeInfo\DecimalPlaces.cs" />
     <Compile Include="DataTypeAttributeInfo\HashColumn.cs" />
+    <Compile Include="GridAttributeInfo\GridColumnTooltip.cs" />
     <Compile Include="GridAttributeInfo\GridViewFiedlAttributeBase.cs" />
     <Compile Include="GridAttributeInfo\GridColumnReadonly.cs" />
     <Compile Include="GridAttributeInfo\GridColumnTitle.cs" />

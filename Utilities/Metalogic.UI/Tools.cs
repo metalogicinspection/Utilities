@@ -106,6 +106,12 @@ namespace Metalogic.UI
                     col.OptionsColumn.ReadOnly = vReadOnly.ReadOnly;
                 }
 
+                var vTooltip = prpty.GetAttribute<GridColumnTooltip>(viewName);
+                if (vTooltip != null)
+                {
+                    col.ToolTip = vTooltip.Tooltip;
+                }
+
 
                 if (prpty.PropertyType.IsSubclassOf(typeof(PicklistItem)) && col.ColumnEdit == null)
                 {
