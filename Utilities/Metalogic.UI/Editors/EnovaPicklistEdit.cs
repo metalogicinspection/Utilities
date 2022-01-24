@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -124,8 +125,22 @@ namespace Metalogic.UI.Editors
                 return;
             }
 
-            Properties.DataSource = evt.FilteredItems;
+            SetDataSource(evt.FilteredItems);
         }
+
+        private void SetDataSource(List<PicklistItem> items)
+        {
+            var listType = typeof(List<>).MakeGenericType(PickListType);
+            var listTrg = Activator.CreateInstance(listType) as IList;
+            foreach (var picklistItem in items)
+            {
+                listTrg.Add(picklistItem);
+            }
+
+            Properties.DataSource = listTrg;
+        }
+
+
         private void HandleCustomDisplayText(object sender, DevExpress.XtraEditors.Controls.CustomDisplayTextEventArgs e)
         {
             Properties.ValueMember = null;
@@ -241,7 +256,7 @@ namespace Metalogic.UI.Editors
 
                 var items = PicklistItem.GetPickListByType(_pickListType).ToArray();
                 
-                Properties.DataSource = items.Where(x => x.IsEnabled).ToArray();
+                SetDataSource(items.Where(x => x.IsEnabled).ToList());
                 _items = items;
             }
         }
@@ -278,7 +293,16 @@ namespace Metalogic.UI.Editors
 
         public DataModel Model { get; private set; }
 
-        public List<string> AdditionalDropDownColumns = new List<string>();
+        public List<string> AdditionalDropDownColumns => PickListType?.GetProperties()
+            .Select(x => new
+            {
+                Prpty = x,
+                VisibleIndex =
+                    (x.GetCustomAttributes(typeof(GridColumnVisibleIndex), false).FirstOrDefault() as
+                        GridColumnVisibleIndex)
+            })
+            .Where(x => (x.VisibleIndex?.VisibleIndex ?? -1) >= 0).OrderBy(x => x.VisibleIndex.VisibleIndex)
+            .Select(x => x.Prpty.Name).ToList()??new List<string>();
     }
 
 }

@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class1.cs" />
     <Compile Include="DropboxHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -59,6 +60,18 @@
     <ProjectReference Include="..\DropboxUploader.Core\DropboxUploader.Core.csproj">
       <Project>{90297947-6cf1-4fe1-9256-89573c3da1c4}</Project>
       <Name>DropboxUploader.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Metalogic.DataUtil\Metalogic.DataUtil.csproj">
+      <Project>{12be3e37-db20-4891-9cc5-454bdd8be8b5}</Project>
+      <Name>Metalogic.DataUtil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Metalogic.UI.Header\Metalogic.UI.Header.csproj">
+      <Project>{fcbd9ca5-b242-4e57-bd7f-d0827b799d47}</Project>
+      <Name>Metalogic.UI.Header</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Metalogic.UI\Metalogic.UI.csproj">
+      <Project>{2f409591-1b34-4529-bbd6-246c401250e1}</Project>
+      <Name>Metalogic.UI</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
