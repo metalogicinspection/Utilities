@@ -29,6 +29,7 @@ namespace Metalogic.UI.Editors
             Properties.DisplayMember = "Code";
             Properties.ValueMember = null;
             Properties.NullText = string.Empty;
+            Properties.AllowMouseWheel = false;
             DisplayValueMode = PicklistDisplayValueModes.Code | PicklistDisplayValueModes.ShortDescription;
 
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
