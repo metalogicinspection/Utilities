@@ -322,6 +322,7 @@ namespace Gen3.UI.Grids
                         gridControl1.BeginUpdate();
                         RowCellValueChangingPost(v, evt);
                         gridControl1.EndUpdate();
+                        _skipEditValuePost = false;
                     }));
                 }
                 catch (Exception)
