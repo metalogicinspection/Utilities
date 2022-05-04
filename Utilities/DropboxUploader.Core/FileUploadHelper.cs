@@ -43,18 +43,25 @@ namespace DropboxUploader.Core
         public static string RemoteFileName(string remotePath)
         {
             var lastIndex = remotePath.LastIndexOf('/');
-            return lastIndex < 0 ? string.Empty : remotePath.Substring(lastIndex +1);
+            return lastIndex < 0 ? string.Empty : remotePath.Substring(lastIndex + 1);
         }
 
         public static string RemoteDirName(string remotePath)
         {
             var lastIndex = remotePath.LastIndexOf('/');
-            return remotePath.Substring(0,lastIndex);
+            return remotePath.Substring(0, lastIndex);
         }
 
         private static void AddPath(StringBuilder sb, string current)
         {
-            if (sb.Length > 0 && sb[sb.Length-1] == '/' )
+            if (string.IsNullOrWhiteSpace(current))
+            {
+                return;
+            }
+
+            current = current.Replace("\\", "/");
+
+            if (sb.Length > 0 && sb[sb.Length - 1] == '/')
             {
                 if (current[0] == '/')
                 {
@@ -65,11 +72,12 @@ namespace DropboxUploader.Core
                 return;
             }
 
-            if (current[0] == '/')
+            if (current[0] == '/' || (sb.Length < 1 && current.StartsWith("http", StringComparison.InvariantCultureIgnoreCase)))
             {
                 sb.Append(current);
                 return;
             }
+
 
             sb.Append('/');
             sb.Append(current);
@@ -106,7 +114,7 @@ namespace DropboxUploader.Core
                     Array.Copy(hash, guid, 16);
                 }
             }
-            
+
             // Don't use Guid constructor, it tends to swap bytes. We want to preserve original string as hex dump.
             var guidS = string.Concat("{",
                            $"{guid[0]:X2}{guid[1]:X2}{guid[2]:X2}{guid[3]:X2}-{guid[4]:X2}{guid[5]:X2}-{guid[6]:X2}{guid[7]:X2}-{guid[8]:X2}{guid[9]:X2}-{guid[10]:X2}{guid[11]:X2}{guid[12]:X2}{guid[13]:X2}{guid[14]:X2}{guid[15]:X2}", "}");
