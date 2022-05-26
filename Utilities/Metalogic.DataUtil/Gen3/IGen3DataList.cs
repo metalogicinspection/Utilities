@@ -9,11 +9,14 @@ namespace Gen3.Data
     public interface IGen3DataList : IBindingListWithMemberType, IRelationList
     {
         IList ToIList();
+        List<T> ToList<T>() where T : class;
 
         string Name { get; set; }
 
 
         List<object> Where(Func<object, bool> condition);
+        void SortBy<TKey>(Func<object, TKey> keySelector);
+        void SortByDescending<TKey>(Func<object, TKey> keySelector);
 
         bool HasRelation(string relationName);
 

@@ -49,8 +49,24 @@ namespace Gen3.Data
         {
             return this.ToList();
         }
-        
-        
+
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public List<T1> ToList<T1>() where T1 : class
+        {
+            if (!typeof(T1).IsAssignableFrom(this.MemberType)) 
+            {
+                throw new Exception("member type: " + this.MemberType.FullName + " can not cast to " + typeof(T1).FullName);
+            }
+            var list = new List<T1>();
+            foreach (var item in this)
+            {
+                list.Add(item as T1);
+            }
+            return list;
+        }
+
+
         public int IndexOf(object value)
         {
             var item = value as T;
@@ -335,6 +351,46 @@ namespace Gen3.Data
         {
             return this.Where(condition).ToList();
         }
+        void IGen3DataList.SortBy<TKey>(Func<object, TKey> keySelector)
+        {
+            this.ToList().OrderBy(x => x.GetHashCode()).ToList();
+               ResetItems(this.ToList().OrderBy(keySelector).ToList());
+        }
+
+        void IGen3DataList.SortByDescending<TKey>(Func<object, TKey> keySelector)
+        {
+            ResetItems(this.ToList().OrderByDescending(keySelector).ToList());
+        }
+
+        private void ResetItems(List<object> items)
+        {
+            base.ClearItems();
+            
+            for (int i = 0; i < items.Count; i++)
+            {
+                base.InsertItem(i, items[i] as T);
+            }
+        }
+
+        void SortBy(Func<T, bool> condition)
+        {
+            ResetItems(this.ToList().OrderBy(condition).ToList());
+        }
+
+        void SortDecendingBy(Func<T, bool> condition)
+        {
+            ResetItems(this.ToList().OrderByDescending(condition).ToList());
+        }
+
+        private void ResetItems(List<T> items)
+        {
+            base.ClearItems();
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                base.InsertItem(i, items[i]);
+            }
+        }
 
         public bool HasRelation(string relationName)
         {
@@ -450,6 +506,6 @@ namespace Gen3.Data
             retValue.RemoveAt(0);
             return retValue.ToArray();
         }
-        
+
     }
 }
