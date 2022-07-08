@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataTableExtentions.cs" />
+    <Compile Include="IDisplayIndexUserChangeable.cs" />
     <Compile Include="LengthUnits.cs" />
     <Compile Include="LinqExtentions.cs" />
     <Compile Include="DataSetExtentions.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="MCDataSet.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="UtilLinqHelper.cs" />
     <Compile Include="PickListExtentions.cs" />
     <Compile Include="PicklistItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

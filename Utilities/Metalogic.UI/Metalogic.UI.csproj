@@ -184,6 +184,9 @@
     <EmbeddedResource Include="Editors\EnovaPicklistEdit.resx">
       <DependentUpon>EnovaPicklistEdit.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Gen3Grids\MasterDetailGridControl.resx">
+      <DependentUpon>MasterDetailGridControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Gen3Grids\SimpleGridControl.resx">
       <DependentUpon>SimpleGridControl.cs</DependentUpon>
     </EmbeddedResource>

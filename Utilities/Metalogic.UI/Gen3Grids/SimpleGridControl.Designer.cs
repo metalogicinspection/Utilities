@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.gridControl1 = new DevExpress.XtraGrid.GridControl();
             this.weldView = new DevExpress.XtraGrid.Views.Grid.GridView();
             this.DeleteWeld = new DevExpress.XtraEditors.Repository.RepositoryItemButtonEdit();
@@ -49,6 +50,7 @@
             this.rsDeleteFilm = new DevExpress.XtraEditors.Repository.RepositoryItemButtonEdit();
             this.repositoryItemMemoEdit3 = new DevExpress.XtraEditors.Repository.RepositoryItemMemoEdit();
             this.rsDeleteGap = new DevExpress.XtraEditors.Repository.RepositoryItemButtonEdit();
+            this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.weldView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DeleteWeld)).BeginInit();
@@ -70,6 +72,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.rsDeleteFilm)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemMemoEdit3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.rsDeleteGap)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.behaviorManager1)).BeginInit();
             this.SuspendLayout();
             // 
             // gridControl1
@@ -265,6 +268,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.rsDeleteFilm)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemMemoEdit3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.rsDeleteGap)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.behaviorManager1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -292,5 +296,6 @@
         private DevExpress.XtraEditors.Repository.RepositoryItemTextEdit rsShotTextEdit;
         private DevExpress.XtraEditors.Repository.RepositoryItemButtonEdit rsDeleteFilm;
         private DevExpress.XtraEditors.Repository.RepositoryItemButtonEdit rsDeleteGap;
+        private DevExpress.Utils.Behaviors.BehaviorManager behaviorManager1;
     }
 }

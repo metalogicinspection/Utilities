@@ -11,6 +11,9 @@ using Gen3.Data;
 using Metalogic.UI.Header.GridAttributeInfo;
 using DevExpress.XtraGrid.Columns;
 using Metalogic.UI;
+using Metalogic.DataUtil;
+using DevExpress.Utils.DragDrop;
+using DevExpress.XtraGrid.Views.Grid.ViewInfo;
 
 namespace Gen3.UI.Grids
 {
@@ -28,8 +31,7 @@ namespace Gen3.UI.Grids
         {
             InitializeComponent();
             
-            Settings = new List<MasterDetailViewSetting>();
-           
+            Settings = new List<MasterDetailViewSetting>();          
 
         }
 
@@ -221,11 +223,96 @@ namespace Gen3.UI.Grids
                 gridControl1.LevelTree.Nodes.Add(gridLevelNode1);
 
             }
-            
+
+            // if detail grid data source allows index user changeable, allow rows to be reordered
+            if (typeof(IDisplayIndexUserChangeable).IsAssignableFrom(table.MemberType))
+            {
+                behaviorManager1.Attach<DragDropBehavior>(setting.View, behavior =>
+                {
+                    behavior.Properties.AllowDrop = true;
+                    behavior.Properties.InsertIndicatorVisible = true;
+                    behavior.Properties.PreviewVisible = true;
+                    behavior.DragDrop += Behavior_DragDrop;
+                    behavior.DragOver += Behavior_DragOver;
+                });
+            }
 
             foreach (var relation in table.Relations)
             {
                 AddView(relation.ChildList, relation);
+            }
+        }
+
+        private void Behavior_DragOver(object sender, DragOverEventArgs e)
+        {
+            DragOverGridEventArgs args = DragOverGridEventArgs.GetDragOverGridEventArgs(e);
+            e.InsertType = args.InsertType;
+            e.InsertIndicatorLocation = args.InsertIndicatorLocation;
+            e.Action = args.Action;
+            Cursor.Current = args.Cursor;
+            args.Handled = true;
+        }
+
+        private void Behavior_DragDrop(object sender, DragDropEventArgs e)
+        {
+            GridView targetGrid = e.Target as GridView;
+            GridView sourceGrid = e.Source as GridView;
+            if (e.Action == DragDropActions.None || targetGrid != sourceGrid)
+                return;
+
+            var sourceTable = sourceGrid.GridControl.DataSource as IGen3DataList;
+
+            Point hitPoint = targetGrid.GridControl.PointToClient(Cursor.Position);
+            GridHitInfo hitInfo = targetGrid.CalcHitInfo(hitPoint);
+
+            int[] sourceHandles = e.GetData<int[]>();
+
+            int targetRowHandle = hitInfo.RowHandle;
+            int targetRowIndex = targetGrid.GetDataSourceRowIndex(targetRowHandle);
+
+            List<IDisplayIndexUserChangeable> draggedRows = new List<IDisplayIndexUserChangeable>();
+            foreach (int sourceHandle in sourceHandles)
+            {
+                int oldRowIndex = sourceGrid.GetDataSourceRowIndex(sourceHandle);
+                var oldRow = (IDisplayIndexUserChangeable)sourceTable[oldRowIndex];
+                draggedRows.Add(oldRow);
+            }
+
+            int newRowIndex;
+            switch (e.InsertType)
+            {
+                case InsertType.Before:
+                    newRowIndex = targetRowIndex > sourceHandles[sourceHandles.Length - 1] ? targetRowIndex - 1 : targetRowIndex;
+                    for (int i = draggedRows.Count - 1; i >= 0; i--)
+                    {
+                        var oldRow = draggedRows[i];
+                        var newRow = oldRow;
+                        sourceTable.RemoveAt(oldRow.Index - 1);
+                        sourceTable.Insert(newRowIndex, newRow);
+                    }
+                    break;
+                case InsertType.After:
+                    newRowIndex = targetRowIndex < sourceHandles[0] ? targetRowIndex + 1 : targetRowIndex;
+                    for (int i = 0; i < draggedRows.Count; i++)
+                    {
+                        var oldRow = draggedRows[i];
+                        var newRow = oldRow;
+                        sourceTable.RemoveAt(oldRow.Index - 1);
+                        sourceTable.Insert(newRowIndex, newRow);
+                    }
+                    break;
+                default:
+                    newRowIndex = -1;
+                    break;
+            }
+            int insertedIndex = targetGrid.GetRowHandle(newRowIndex);
+            targetGrid.FocusedRowHandle = insertedIndex;
+            targetGrid.SelectRow(targetGrid.FocusedRowHandle);
+
+            // reset index in order
+            for (int i = 0; i < sourceTable.Count; i++)
+            {
+                sourceTable[i].SetObjPropertyValue("Index", i + 1);
             }
         }
 
